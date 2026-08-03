@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Any
+from typing import Any
 
+import cvxpy as cp
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-import cvxpy as cp
 
 
 @dataclass
@@ -24,8 +24,8 @@ class AlphaModel:
     - ce modèle est volontairement simple et sert de squelette propre
     """
     add_intercept: bool = True
-    results_: Optional[Any] = field(default=None, init=False)
-    feature_names_: Optional[list[str]] = field(default=None, init=False)
+    results_: Any | None = field(default=None, init=False)
+    feature_names_: list[str] | None = field(default=None, init=False)
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> "AlphaModel":
         if not isinstance(X, pd.DataFrame):
@@ -87,12 +87,12 @@ class FactorRiskModel:
         Sigma = B Sigma_f B^T + D
     """
     add_intercept: bool = True
-    intercepts_: Optional[pd.Series] = field(default=None, init=False)
-    beta_df_: Optional[pd.DataFrame] = field(default=None, init=False)
-    residual_var_: Optional[pd.Series] = field(default=None, init=False)
-    factor_cov_: Optional[pd.DataFrame] = field(default=None, init=False)
-    asset_names_: Optional[list[str]] = field(default=None, init=False)
-    factor_names_: Optional[list[str]] = field(default=None, init=False)
+    intercepts_: pd.Series | None = field(default=None, init=False)
+    beta_df_: pd.DataFrame | None = field(default=None, init=False)
+    residual_var_: pd.Series | None = field(default=None, init=False)
+    factor_cov_: pd.DataFrame | None = field(default=None, init=False)
+    asset_names_: list[str] | None = field(default=None, init=False)
+    factor_names_: list[str] | None = field(default=None, init=False)
 
     def fit(self, returns: pd.DataFrame, factors: pd.DataFrame) -> "FactorRiskModel":
         if not isinstance(returns, pd.DataFrame):
@@ -119,9 +119,9 @@ class FactorRiskModel:
 
         X = sm.add_constant(F, has_constant="add") if self.add_intercept else F
 
-        intercepts: Dict[str, float] = {}
-        betas: Dict[str, np.ndarray] = {}
-        residual_vars: Dict[str, float] = {}
+        intercepts: dict[str, float] = {}
+        betas: dict[str, np.ndarray] = {}
+        residual_vars: dict[str, float] = {}
 
         for asset in R.columns:
             y = R[asset]
@@ -195,8 +195,8 @@ class PortfolioOptimizer:
         self,
         mu: pd.Series,
         Sigma: pd.DataFrame,
-        exposures: Optional[pd.DataFrame],
-        constraints: Optional[Dict[str, Any]] = None,
+        exposures: pd.DataFrame | None,
+        constraints: dict[str, Any] | None = None,
     ) -> pd.Series:
         if constraints is None:
             constraints = {}
